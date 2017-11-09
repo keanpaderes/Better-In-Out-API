@@ -1,1 +1,1 @@
-api: nodemon src/index.js
+api: DEBUG=better-in-out-api:* nodemon src/index.js
