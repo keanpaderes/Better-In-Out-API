@@ -12,12 +12,35 @@ const expressPrettify = require('express-prettify')
 const expressWinston = require('express-winston')
 const expressValidation = require('express-validation')
 const helmet = require('helmet')
+const swaggerJSDoc = require('swagger-jsdoc')
+const swaggerUi = require('swagger-ui-express')
 const winstonInstance = require('./winston')
 const routes = require('../server/routes/index.route')
 const config = require('./config')
 const APIError = require('../server/helpers/APIError')
 
 const app = express()
+const swaggerDefinition = {
+  info : {
+    title: 'Better In & Out Mobile API',
+    version: '0.0.1',
+    description: 'Better In & Out Mobile API'
+  },
+  host: config.apiUrl,
+  basePath: '/',
+  securityDefinitions: {
+    'bearerAuth': {
+      'type': 'apiKey',
+      'name': 'Authorization',
+      'in': 'header'
+    }
+  }
+}
+const options = {
+  swaggerDefinition: swaggerDefinition,
+  apis: ['src/server/routes/*.js']
+}
+const swaggerSpec = swaggerJSDoc(options)
 
 if (config.env === 'development') {
   app.use(logger('dev'))
@@ -45,6 +68,7 @@ if (config.env === 'development') {
   }))
 }
 
+app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use('/api', routes)
 
 // if error is not an instanceOf APIError, convert it.
@@ -78,11 +102,25 @@ if (config.env !== 'test') {
 app.use(expressPrettify({ query: 'pretty' }))
 
 // error handler, send stacktrace only during development
-app.use((err, req, res, next) => // eslint-disable-line no-unused-vars
-  res.status(err.status).json({
-    message: err.isPublic ? err.message : httpStatus[err.status],
-    stack: config.env === 'development' ? err.stack : {}
-  })
-)
+app.use((err, req, res, next) => {// eslint-disable-line no-unused-vars
+  let message
+  if(err.status >= 300 && err.status < 400)
+    message = {
+      redirect:{
+        code: err.status,
+        description: err.isPublic ? err.message : httpStatus[err.status],
+      },
+      stack: config.env === 'development' ? err.stack : {}
+    }
+  else
+    message = {
+      error:{
+        code: err.status,
+        description: err.isPublic ? err.message : httpStatus[err.status],
+      },
+      stack: config.env === 'development' ? err.stack : {}
+    }
+  res.status(err.status).json(message)
+})
 
 module.exports = app

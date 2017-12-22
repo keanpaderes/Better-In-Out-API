@@ -5,25 +5,34 @@ const Joi = require('joi')
 require('dotenv').config()
 
 const envVarsSchema = Joi.object({
-  NODE_ENV: Joi.string()
-    .allow(['development','production','test'])
-    .default('development'),
-  PORT: Joi.number()
-    .default(1337),
-  MONGOOSE_DEBUG: Joi.boolean()
-    .when('NODE_ENV', {
-      is: Joi.string().equal('development'),
-      then: Joi.boolean().default(true),
-      otherwise: Joi.boolean().default(false)
-    }),
+  API_URL: Joi.string()
+    .required()
+    .description('API url required'),
+  GOOGLE_CLIENT_ID_ANDROID: Joi.string()
+    .required()
+    .description('Google Client ID for Android required'),
+  GOOGLE_CLIENT_ID_WEB: Joi.string()
+    .required()
+    .description('Google Client ID for Web required'),
   JWT_SECRET: Joi.string()
     .required()
     .description('JWT Secret required'),
-  MONGO_HOST: Joi.string()
+  MONGODB_AUTH: Joi.string()
     .required()
-    .description('MongoDB host url'),
-  MONGO_PORT: Joi.number()
-    .default(27017)
+    .description('Mongodb authentication database required'),
+  MONGODB_PORT: Joi.number()
+    .default(27017),
+  MONGODB_PW: Joi.string()
+    .required()
+    .description('Mongodb password required'),
+  MONGODB_USER: Joi.string()
+    .required()
+    .description('Mongodb user required'),
+  NODE_ENV: Joi.string()
+  .allow(['development','production','test'])
+  .default('development'),
+  PORT: Joi.number()
+  .default(1337)
 }).unknown()
   .required()
 
@@ -34,12 +43,15 @@ if (error) {
 }
 
 module.exports = {
+  apiUrl: envVars.API_URL,
+  clientId: [envVars.GOOGLE_CLIENT_ID_ANDROID, envVars.GOOGLE_CLIENT_ID_WEB],
   env: envVars.NODE_ENV,
-  port: envVars.PORT,
-  mongooseDebug: envVars.MONGOOSE_DEBUG,
   jwtSecret: envVars.JWT_SECRET,
   mongo: {
-    host: envVars.MONGO_HOST,
-    port: envVars.MONGO_PORT
-  }
+    auth: envVars.MONGODB_AUTHDB,
+    password: envVars.MONGODB_PW,
+    port: envVars.MONGO_PORT,
+    user: envVars.MONGODB_USER
+  },
+  port: envVars.PORT
 }
