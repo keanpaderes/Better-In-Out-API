@@ -44,7 +44,10 @@ if (error) {
 
 module.exports = {
   apiUrl: envVars.API_URL,
-  clientId: [envVars.GOOGLE_CLIENT_ID_ANDROID, envVars.GOOGLE_CLIENT_ID_WEB],
+  clientId: {
+    android: envVars.GOOGLE_CLIENT_ID_ANDROID,
+    web: envVars.GOOGLE_CLIENT_ID_WEB
+  },
   env: envVars.NODE_ENV,
   jwtSecret: envVars.JWT_SECRET,
   mongo: {
