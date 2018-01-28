@@ -6,7 +6,7 @@ const path = require('path')
 const config = require('../../config/config')
 const authRoutes = require('./auth.route')
 const auth = new GoogleAuth()
-const client = new auth.OAuth2(config.clientId.android)
+const client = new auth.OAuth2(config.clientId.web)
 
 const router = express.Router() // eslint-disable-line new-cap
 
@@ -38,6 +38,7 @@ router.get('/health-check', (req, res) =>res.json({
 router.post('/check', (req, res) => {
   client.verifyIdToken(req.body.token,
       Object.values(config.clientId), (e, login) => {
+        console.log(req.body. token)
         if(e) res.status(500).send('Oh noes')
         else {
           const payload = login.getPayload()
